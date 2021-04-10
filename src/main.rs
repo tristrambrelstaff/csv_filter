@@ -11,7 +11,7 @@ fn run(
     target : &mut dyn io::Write
 ) -> Result<(), Box<dyn Error>> {
     let query = match args.first() {
-        None => return Err(From::from("expected 1 argument, but got none")),
+        None => return Err(From::from("Program must be called with 1 argument")),
         Some(query) => query,
     };
     let mut rdr = csv::Reader::from_reader(source);
@@ -33,7 +33,27 @@ fn main() {
     let mut source = io::stdin();
     let mut target = io::stdout();
     if let Err(err) = run(args, &mut source, &mut target) {
-        println!("{}", err);
+        println!("ERROR: {}", err);
         process::exit(1);
     }
+}
+
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn pred_eq() {
+        let args = vec!["a".to_string()];
+        let mut source = "a,b,c\n1,2,3\n4,a,6\n7,8,9".as_bytes();
+        let mut target : Vec<u8> = Vec::new();
+        if let Err(err) = run(args, &mut source, &mut target) {
+            println!("ERROR: {}", err);
+        } else {
+            assert_eq!(target, "a,b,c\n4,a,6\n".as_bytes().to_vec());
+	}
+    }
+
 }
